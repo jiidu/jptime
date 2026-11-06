@@ -111,6 +111,27 @@ code { font-family: var(--font-mono); }
   align-items: center;
 }
 .eyebrow b { color: var(--accent); font-weight: 600; }
+.topbar { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.lang {
+  flex: none;
+  display: inline-flex;
+  border: 1px solid var(--bar-track);
+  border-radius: 999px;
+  padding: 2px;
+}
+.lang button {
+  font: 500 0.75rem var(--font-mono);
+  letter-spacing: 0.06em;
+  color: var(--hero-muted);
+  background: transparent;
+  border: 0;
+  border-radius: 999px;
+  padding: 5px 10px;
+  min-height: 30px;
+  cursor: pointer;
+}
+.lang button[aria-pressed="true"] { background: var(--accent); color: var(--sky-top); }
+.lang button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .clock { display: grid; gap: 10px; }
 .time {
   font-weight: 800;
@@ -205,8 +226,14 @@ summary:focus-visible, button:focus-visible { outline: 2px solid var(--accent); 
 <body>
 <header class="hero">
   <div class="wrap">
-    <section class="clock" aria-label="JPTime-kello">
-      <div class="eyebrow"><b>JPTime</b><span>JPT · UTC+03:00</span><span>Ikuinen Suomen kesäaika</span></div>
+    <section class="clock" data-i18n-aria="clockLabel" aria-label="JPTime-kello">
+      <div class="topbar">
+        <div class="eyebrow"><b>JPTime</b><span>JPT · UTC+03:00</span><span data-i18n="tagline">Ikuinen Suomen kesäaika</span></div>
+        <div class="lang" role="group" aria-label="Kieli / Language">
+          <button type="button" id="lang-fi" data-lang="fi" lang="fi" aria-pressed="true">FI</button>
+          <button type="button" id="lang-en" data-lang="en" lang="en" aria-pressed="false">EN</button>
+        </div>
+      </div>
       <div class="time" id="time">--:--<span class="sec">:--</span></div>
       <div class="date" id="date">&nbsp;</div>
       <div>
@@ -217,7 +244,7 @@ summary:focus-visible, button:focus-visible { outline: 2px solid var(--accent); 
   </div>
 </header>
 
-<canvas class="scene" id="scene" role="img" aria-label="Kesäinen järvimaisema: puulaituri, tuulessa heiluvat koivut, lentäviä lehtiä ja kimmeltävä järvi."></canvas>
+<canvas class="scene" id="scene" role="img" data-i18n-aria="sceneLabel" aria-label="Kesäinen järvimaisema: puulaituri, tuulessa heiluvat koivut, lentäviä lehtiä ja kimmeltävä järvi."></canvas>
 
 <main class="wrap">
   <div class="status" role="status">
@@ -225,52 +252,52 @@ summary:focus-visible, button:focus-visible { outline: 2px solid var(--accent); 
     <p id="statustext">&nbsp;</p>
   </div>
 
-  <section class="compare" aria-label="Vertailu">
+  <section class="compare" data-i18n-aria="compareLabel" aria-label="Vertailu">
     <div>
-      <span class="label">Suomen virallinen aika</span>
+      <span class="label" data-i18n="fiLabel">Suomen virallinen aika</span>
       <span class="val" id="fi">--:--</span>
       <span class="sub" id="fisub">&nbsp;</span>
     </div>
     <div>
-      <span class="label">Ero JPTimeen</span>
+      <span class="label" data-i18n="diffLabel">Ero JPTimeen</span>
       <span class="val" id="diff">–</span>
       <span class="sub" id="diffsub">&nbsp;</span>
     </div>
     <div>
       <span class="label">UTC</span>
       <span class="val" id="utc">--:--</span>
-      <span class="sub">Koordinoitu yleisaika</span>
+      <span class="sub" data-i18n="utcSub">Koordinoitu yleisaika</span>
     </div>
   </section>
 
   <details open>
-    <summary>JPTime omalle sivulle</summary>
+    <summary data-i18n="apiSummary">JPTime omalle sivulle</summary>
     <div class="defs">
       <div class="def">
-        <span class="label">1. Lisää skripti</span>
-        <div class="code"><pre id="c1">&lt;script src="jptime.js"&gt;&lt;/script&gt;</pre><button type="button" data-target="c1">Kopioi</button></div>
+        <span class="label" data-i18n="step1">1. Lisää skripti</span>
+        <div class="code"><pre id="c1">&lt;script src="jptime.js"&gt;&lt;/script&gt;</pre><button type="button" data-target="c1" data-i18n="copy">Kopioi</button></div>
       </div>
       <div class="def">
-        <span class="label">2a. Valmis kello ilman omaa koodia</span>
-        <div class="code"><pre id="c2">&lt;jp-time format="HH:mm"&gt;&lt;/jp-time&gt;</pre><button type="button" data-target="c2">Kopioi</button></div>
-        <div class="demo" aria-label="Esimerkkejä">
+        <span class="label" data-i18n="step2a">2a. Valmis kello ilman omaa koodia</span>
+        <div class="code"><pre id="c2">&lt;jp-time format="HH:mm"&gt;&lt;/jp-time&gt;</pre><button type="button" data-target="c2" data-i18n="copy">Kopioi</button></div>
+        <div class="demo" data-i18n-aria="examples" aria-label="Esimerkkejä">
           <jp-time format="HH:mm"></jp-time>
-          <jp-time format="dddd D. MMMM [klo] HH.mm.ss"></jp-time>
+          <jp-time format="dddd D. MMMM [klo] HH.mm.ss" data-fmt-fi="dddd D. MMMM [klo] HH.mm.ss" data-fmt-en="dddd, D MMMM [at] HH:mm:ss"></jp-time>
           <jp-time format="YYYY-MM-DD HH:mm zz"></jp-time>
         </div>
-        <p>Muotoilumerkit: <code>YYYY MMMM MM M DD D dddd HH H mm ss zz Z</code>. Hakasulkeissa oleva teksti, kuten <code>[klo]</code>, tulostuu sellaisenaan.</p>
+        <p data-i18n="tokensHelp">Muotoilumerkit: <code>YYYY MMMM MM M DD D dddd HH H mm ss zz Z</code>. Hakasulkeissa oleva teksti, kuten <code>[klo]</code>, tulostuu sellaisenaan.</p>
       </div>
       <div class="def">
-        <span class="label">2b. JavaScript-rajapinta</span>
+        <span class="label" data-i18n="step2b">2b. JavaScript-rajapinta</span>
         <div class="code"><pre id="c3">JPTime.now()            // { time, date, iso, finland, aheadOfFinlandHours, … }
 JPTime.format(new Date(), "HH.mm")
 JPTime.toISOString()    // "2026-11-07T00:30:05.000+03:00"
-const stop = JPTime.watch(t =&gt; console.log(t.time))</pre><button type="button" data-target="c3">Kopioi</button></div>
+const stop = JPTime.watch(t =&gt; console.log(t.time))</pre><button type="button" data-target="c3" data-i18n="copy">Kopioi</button></div>
       </div>
       <div class="def">
-        <span class="label">Komentorivi (Linux, macOS, WSL)</span>
-        <div class="code"><pre id="c4">TZ="JPT-3" date</pre><button type="button" data-target="c4">Kopioi</button></div>
-        <p>POSIX-muodossa etumerkki on käänteinen, joten <code>JPT-3</code> tarkoittaa UTC+3:a. Kesäaikasääntöä ei ole, joten kello ei siirry koskaan.</p>
+        <span class="label" data-i18n="cli">Komentorivi (Linux, macOS, WSL)</span>
+        <div class="code"><pre id="c4">TZ="JPT-3" date</pre><button type="button" data-target="c4" data-i18n="copy">Kopioi</button></div>
+        <p data-i18n="cliHelp">POSIX-muodossa etumerkki on käänteinen, joten <code>JPT-3</code> tarkoittaa UTC+3:a. Kesäaikasääntöä ei ole, joten kello ei siirry koskaan.</p>
       </div>
     </div>
   </details>
@@ -286,21 +313,100 @@ const stop = JPTime.watch(t =&gt; console.log(t.time))</pre><button type="button
     el("c1").textContent = '<script src="' + new URL("jptime.js", location.href).href + '"><\/script>';
   }
 
+  const T = {
+    fi: {
+      clockLabel: "JPTime-kello",
+      tagline: "Ikuinen Suomen kesäaika",
+      sceneLabel: "Kesäinen järvimaisema: puulaituri, tuulessa heiluvat koivut, lentäviä lehtiä ja kimmeltävä järvi.",
+      compareLabel: "Vertailu",
+      fiLabel: "Suomen virallinen aika",
+      diffLabel: "Ero JPTimeen",
+      utcSub: "Koordinoitu yleisaika",
+      apiSummary: "JPTime omalle sivulle",
+      step1: "1. Lisää skripti",
+      step2a: "2a. Valmis kello ilman omaa koodia",
+      step2b: "2b. JavaScript-rajapinta",
+      examples: "Esimerkkejä",
+      tokensHelp: 'Muotoilumerkit: <code>YYYY MMMM MM M DD D dddd HH H mm ss zz Z</code>. Hakasulkeissa oleva teksti, kuten <code>[klo]</code>, tulostuu sellaisenaan. Englanninkieliset nimet saat määritteellä <code>locale="en"</code>.',
+      cli: "Komentorivi (Linux, macOS, WSL)",
+      cliHelp: "POSIX-muodossa etumerkki on käänteinen, joten <code>JPT-3</code> tarkoittaa UTC+3:a. Kesäaikasääntöä ei ole, joten kello ei siirry koskaan.",
+      copy: "Kopioi", copied: "Kopioitu",
+      dateFmt: "dddd D. MMMM YYYY",
+      summer: "EEST, kesäaika", winter: "EET, talviaika",
+      same: "Kellot ovat samassa ajassa", ahead: "JPTime on edellä",
+      changeDate: d => d.getUTCDate() + "." + (d.getUTCMonth() + 1) + "." + d.getUTCFullYear(),
+      statusSummer: day => "<strong>Nyt on kesäaika, joten JPTime ja Suomen aika ovat samat.</strong> Suomi siirtyy talviaikaan " + day + ". JPTime ei siirry, vaan on sen jälkeen tunnin edellä.",
+      statusWinter: day => "<strong>Suomessa on talviaika, joten JPTime on tunnin edellä.</strong> Kellot ovat taas samassa ajassa " + day + " alkaen, kun Suomi siirtyy kesäaikaan."
+    },
+    en: {
+      clockLabel: "JPTime clock",
+      tagline: "Permanent Finnish summer time",
+      sceneLabel: "A Finnish summer lake: a wooden jetty, birches swaying in the wind, drifting leaves and a glittering lake.",
+      compareLabel: "Comparison",
+      fiLabel: "Official Finnish time",
+      diffLabel: "Difference",
+      utcSub: "Coordinated Universal Time",
+      apiSummary: "JPTime on your own site",
+      step1: "1. Add the script",
+      step2a: "2a. Ready-made clock, no code needed",
+      step2b: "2b. JavaScript API",
+      examples: "Examples",
+      tokensHelp: 'Format tokens: <code>YYYY MMMM MM M DD D dddd HH H mm ss zz Z</code>. Text in square brackets, such as <code>[at]</code>, is printed as is. Add <code>locale="en"</code> for English day and month names.',
+      cli: "Command line (Linux, macOS, WSL)",
+      cliHelp: "POSIX reverses the sign, so <code>JPT-3</code> means UTC+3. There is no daylight saving rule, so the clock never changes.",
+      copy: "Copy", copied: "Copied",
+      dateFmt: "dddd, D MMMM YYYY",
+      summer: "EEST, summer time", winter: "EET, winter time",
+      same: "Both clocks agree", ahead: "JPTime is ahead",
+      changeDate: d => d.getUTCDate() + " " + JPTime.locales.en.months[d.getUTCMonth()] + " " + d.getUTCFullYear(),
+      statusSummer: day => "<strong>It is summer time, so JPTime and Finnish time are the same.</strong> Finland switches to winter time on " + day + ". JPTime does not, so from then on it is one hour ahead.",
+      statusWinter: day => "<strong>Finland is on winter time, so JPTime is one hour ahead.</strong> The clocks agree again from " + day + ", when Finland switches to summer time."
+    }
+  };
+
+  let lang = "fi";
+  try {
+    const fromHash = location.hash.slice(1);
+    let saved = null;
+    try { saved = localStorage.getItem("jptime-lang"); } catch (e) {}
+    lang = T[fromHash] ? fromHash : T[saved] ? saved : (navigator.language || "fi").toLowerCase().startsWith("fi") ? "fi" : "en";
+  } catch (e) { lang = "fi"; }
+
+  function applyLang(next) {
+    lang = next;
+    const L = T[lang];
+    document.documentElement.lang = lang;
+    document.querySelectorAll("[data-i18n]").forEach(n => { n.innerHTML = L[n.dataset.i18n]; });
+    document.querySelectorAll("[data-i18n-aria]").forEach(n => n.setAttribute("aria-label", L[n.dataset.i18nAria]));
+    document.querySelectorAll("jp-time[data-fmt-" + lang + "]").forEach(n => n.setAttribute("format", n.getAttribute("data-fmt-" + lang)));
+    document.querySelectorAll(".lang button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.lang === lang)));
+    lastStatusKey = "";
+    render(JPTime.now());
+  }
+
+  document.querySelectorAll(".lang button").forEach(b => b.addEventListener("click", () => {
+    applyLang(b.dataset.lang);
+    try { localStorage.setItem("jptime-lang", lang); } catch (e) {}
+    try { history.replaceState(null, "", "#" + lang); } catch (e) {}
+  }));
+  window.addEventListener("hashchange", () => { const h = location.hash.slice(1); if (T[h] && h !== lang) applyLang(h); });
+
   let lastStatusKey = "";
-  JPTime.watch(function (t) {
+  function render(t) {
+    const L = T[lang];
     const p = t.parts;
     el("time").innerHTML = pad(p.hours) + ":" + pad(p.minutes) + '<span class="sec">:' + pad(p.seconds) + "</span>";
-    el("date").textContent = JPTime.format(t.timestamp, "dddd D. MMMM YYYY");
+    el("date").textContent = JPTime.format(t.timestamp, L.dateFmt, lang);
     el("dayfill").style.width = ((p.hours * 3600 + p.minutes * 60 + p.seconds) / 864).toFixed(2) + "%";
 
     const fo = JPTime.finlandOffsetHours(t.timestamp);
     const f = new Date(t.timestamp + fo * 3600000);
     el("fi").textContent = pad(f.getUTCHours()) + ":" + pad(f.getUTCMinutes());
-    el("fisub").textContent = (t.finland.isSummerTime ? "EEST, kesäaika" : "EET, talviaika") + " · UTC" + t.finland.offset;
+    el("fisub").textContent = (t.finland.isSummerTime ? L.summer : L.winter) + " · UTC" + t.finland.offset;
 
     const d = t.aheadOfFinlandHours;
     el("diff").textContent = d === 0 ? "0 h" : "+" + d + " h";
-    el("diffsub").textContent = d === 0 ? "Kellot ovat samassa ajassa" : "JPTime on edellä";
+    el("diffsub").textContent = d === 0 ? L.same : L.ahead;
 
     const u = new Date(t.timestamp);
     el("utc").textContent = pad(u.getUTCHours()) + ":" + pad(u.getUTCMinutes());
@@ -310,23 +416,24 @@ const stop = JPTime.watch(t =&gt; console.log(t.time))</pre><button type="button
       lastStatusKey = key;
       const nc = new Date(t.nextFinnishClockChange);
       const ncFi = new Date(nc.getTime() + fo * 3600000);
-      const day = ncFi.getUTCDate() + "." + (ncFi.getUTCMonth() + 1) + "." + ncFi.getUTCFullYear();
-      el("statustext").innerHTML = t.finland.isSummerTime
-        ? "<strong>Nyt on kesäaika, joten JPTime ja Suomen aika ovat samat.</strong> Suomi siirtyy talviaikaan " + day + ". JPTime ei siirry, vaan on sen jälkeen tunnin edellä."
-        : "<strong>Suomessa on talviaika, joten JPTime on tunnin edellä.</strong> Kellot ovat taas samassa ajassa " + day + " alkaen, kun Suomi siirtyy kesäaikaan.";
+      const day = L.changeDate(ncFi);
+      el("statustext").innerHTML = t.finland.isSummerTime ? L.statusSummer(day) : L.statusWinter(day);
     }
-  });
+  }
+
+  applyLang(lang);
+  JPTime.watch(render);
 
   document.querySelectorAll(".code button").forEach(btn => {
     btn.addEventListener("click", () => {
       const code = el(btn.dataset.target);
-      const reset = (txt, ms) => { btn.textContent = txt; setTimeout(() => btn.textContent = "Kopioi", ms); };
+      const reset = (txt, ms) => { btn.textContent = txt; setTimeout(() => btn.textContent = T[lang].copy, ms); };
       const fallback = () => {
         const r = document.createRange(); r.selectNodeContents(code);
         const s = getSelection(); s.removeAllRanges(); s.addRange(r);
         reset("Ctrl+C", 2000);
       };
-      try { navigator.clipboard.writeText(code.textContent).then(() => reset("Kopioitu", 1500), fallback); }
+      try { navigator.clipboard.writeText(code.textContent).then(() => reset(T[lang].copied, 1500), fallback); }
       catch (e) { fallback(); }
     });
   });

@@ -1,5 +1,5 @@
 /*!
- * JPTime 1.0.0 – ikuinen Suomen kesäaika (UTC+3, ei kellojen siirtelyä).
+ * JPTime 1.1.0 – ikuinen Suomen kesäaika (UTC+3, ei kellojen siirtelyä).
  * Käyttö: <script src="https://<käyttäjä>.github.io/jptime/jptime.js"></script>
  * Tarjoaa globaalin JPTime-olion ja <jp-time>-elementin.
  */
@@ -8,9 +8,19 @@
 
   var OFFSET_HOURS = 3;
   var OFFSET_MS = OFFSET_HOURS * 3600000;
-  var WEEKDAYS = ["sunnuntai", "maanantai", "tiistai", "keskiviikko", "torstai", "perjantai", "lauantai"];
-  var MONTHS = ["tammikuuta", "helmikuuta", "maaliskuuta", "huhtikuuta", "toukokuuta", "kesäkuuta",
-    "heinäkuuta", "elokuuta", "syyskuuta", "lokakuuta", "marraskuuta", "joulukuuta"];
+  var LOCALES = {
+    fi: {
+      weekdays: ["sunnuntai", "maanantai", "tiistai", "keskiviikko", "torstai", "perjantai", "lauantai"],
+      months: ["tammikuuta", "helmikuuta", "maaliskuuta", "huhtikuuta", "toukokuuta", "kesäkuuta",
+        "heinäkuuta", "elokuuta", "syyskuuta", "lokakuuta", "marraskuuta", "joulukuuta"]
+    },
+    en: {
+      weekdays: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+      months: ["January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"]
+    }
+  };
+  function locale(name) { return LOCALES[String(name || "fi").slice(0, 2).toLowerCase()] || LOCALES.fi; }
 
   function pad(n, len) { n = String(n); while (n.length < (len || 2)) n = "0" + n; return n; }
 
@@ -37,8 +47,9 @@
     return (ms >= lastSundayUTC(y, 2) && ms < lastSundayUTC(y, 9)) ? 3 : 2;
   }
 
-  function parts(d) {
+  function parts(d, lang) {
     var j = new Date(toMs(d) + OFFSET_MS);
+    var L = locale(lang);
     return {
       year: j.getUTCFullYear(),
       month: j.getUTCMonth() + 1,
@@ -48,17 +59,18 @@
       seconds: j.getUTCSeconds(),
       milliseconds: j.getUTCMilliseconds(),
       weekday: j.getUTCDay(),
-      weekdayName: WEEKDAYS[j.getUTCDay()],
-      monthName: MONTHS[j.getUTCMonth()]
+      weekdayName: L.weekdays[j.getUTCDay()],
+      monthName: L.months[j.getUTCMonth()]
     };
   }
 
   /**
    * Muotoilee ajan JPTimessa.
    * Merkit: YYYY MMMM MM M DD D dddd HH H mm ss zz Z, ja [teksti] sellaisenaan.
+   * lang: "fi" (oletus) tai "en" viikonpäivien ja kuukausien nimille.
    */
-  function format(d, pattern) {
-    var p = parts(d);
+  function format(d, pattern, lang) {
+    var p = parts(d, lang);
     return String(pattern || "HH:mm:ss").replace(
       /\[([^\]]*)\]|YYYY|MMMM|MM|M|DD|D|dddd|HH|H|mm|ss|zz|Z/g,
       function (tok, literal) {
@@ -129,7 +141,8 @@
   }
 
   var JPTime = {
-    version: "1.0.0",
+    version: "1.1.0",
+    locales: LOCALES,
     offsetHours: OFFSET_HOURS,
     offset: "+03:00",
     abbreviation: "JPT",
@@ -147,12 +160,16 @@
       && !root.customElements.get("jp-time")) {
     var elements = new Set();
     var stopShared = null;
-    var render = function (el) { el.textContent = format(Date.now(), el.getAttribute("format") || "HH:mm:ss"); };
+    var render = function (el) {
+      var lang = el.getAttribute("locale");
+      if (!lang && el.closest) { var host = el.closest("[lang]"); lang = host ? host.getAttribute("lang") : null; }
+      el.textContent = format(Date.now(), el.getAttribute("format") || "HH:mm:ss", lang);
+    };
     var JpTimeElement = function () { return Reflect.construct(root.HTMLElement, [], JpTimeElement); };
     JpTimeElement.prototype = Object.create(root.HTMLElement.prototype);
     JpTimeElement.prototype.constructor = JpTimeElement;
     Object.setPrototypeOf(JpTimeElement, root.HTMLElement);
-    Object.defineProperty(JpTimeElement, "observedAttributes", { get: function () { return ["format"]; } });
+    Object.defineProperty(JpTimeElement, "observedAttributes", { get: function () { return ["format", "locale"]; } });
     JpTimeElement.prototype.connectedCallback = function () {
       if (!this.hasAttribute("role")) this.setAttribute("role", "timer");
       elements.add(this);

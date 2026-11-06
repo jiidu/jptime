@@ -1,16 +1,23 @@
 # JPTime
 
+*Suomeksi · [In English](README.en.md)*
+
 **JPTime on ikuinen Suomen kesäaika: UTC+3 ympäri vuoden ilman kellojen siirtelyä.**
 
-Repositoriossa on kolme tiedostoa:
+Repositoriossa on neljä tiedostoa:
 
 - `index.html` on kellosivu.
 - `jptime.js` on rajapinta, jolla JPTimen saa omalle sivulle.
 - `README.md` on tämä ohje.
+- `README.en.md` on sama ohje englanniksi.
 
 Sivu näyttää JPTimen kellonajan ja vertaa sitä Suomen viralliseen aikaan ja UTC:hen. Se kertoo myös, ovatko kellot nyt samassa ajassa ja milloin tilanne seuraavan kerran muuttuu.
 
 Kellon alla on elävä suomalainen kesämaisema: puulaituri, tuulessa heiluvat riippakoivut, lentävät lehdet ja kimmeltävä järvi. Vaaleassa teemassa on heinäkuun iltapäivä ja tummassa yötön yö. Jos laitteessa on valittu vähennetty liike, maisema pysyy paikallaan.
+
+Sivu on suomeksi ja englanniksi. Kieltä voi vaihtaa oikean yläkulman FI/EN-valitsimesta. Sivu muistaa valinnan, ja englanninkielisen sivun saa suoraan linkillä, jonka loppuun on lisätty `#en`. Ensimmäisellä käynnillä kieli valitaan selaimen kielen mukaan.
+
+Sivu ei tarvitse build-vaihetta. Ulkoisia riippuvuuksia ovat vain Google Fonts -fontit. Jos ne eivät lataudu, sivu käyttää järjestelmän fontteja.
 
 ## Miksi JPTime?
 
@@ -30,22 +37,12 @@ JPTime ei jää odottamaan. Se valitsee kesäajan ja pysyy siinä:
 | Kesällä | UTC+3 (EEST) | UTC+3 |
 | Talvella | UTC+2 (EET) | UTC+3, eli tunnin edellä |
 
-## Julkaisu GitHub Pagesissa
-
-1. Luo GitHubiin uusi repositorio, esimerkiksi `jptime`.
-2. Lisää siihen `index.html`, `jptime.js` ja `README.md`.
-3. Avaa repositoriosta **Settings → Pages**.
-4. Valitse kohtaan *Source* vaihtoehto **Deploy from a branch** ja haaraksi `main` / `(root)`, ja tallenna.
-5. Sivu ilmestyy hetken kuluttua osoitteeseen `https://<käyttäjänimi>.github.io/jptime/`.
-
-Sivu ei tarvitse build-vaihetta. Ulkoisia riippuvuuksia ovat vain Google Fonts -fontit. Jos ne eivät lataudu, sivu käyttää järjestelmän fontteja.
-
 ## API: JPTime omalle sivulle
 
-`jptime.js` on pieni JavaScript-kirjasto ilman riippuvuuksia. Kun se on julkaistu Pagesissa, kuka tahansa voi lisätä sen omalle sivulleen:
+`jptime.js` on pieni JavaScript-kirjasto ilman riippuvuuksia. Lisää se sivullesi skriptinä:
 
 ```html
-<script src="https://<käyttäjänimi>.github.io/jptime/jptime.js"></script>
+<script src="https://<osoite>/jptime.js"></script>
 ```
 
 ### Valmis kello ilman omaa koodia
@@ -55,16 +52,20 @@ Sivu ei tarvitse build-vaihetta. Ulkoisia riippuvuuksia ovat vain Google Fonts -
 <jp-time format="dddd D. MMMM [klo] HH.mm.ss"></jp-time>
 ```
 
-`<jp-time>` päivittyy itsestään kerran sekunnissa. Ilman `format`-määritettä muoto on `HH:mm:ss`.
+`<jp-time>` päivittyy itsestään kerran sekunnissa. Ilman `format`-määritettä muoto on `HH:mm:ss`. Viikonpäivät ja kuukaudet saa englanniksi määritteellä `locale="en"`. Ilman sitä kieli otetaan sivun `lang`-määritteestä.
+
+```html
+<jp-time locale="en" format="dddd, D MMMM [at] HH:mm"></jp-time>
+```
 
 ### JavaScript-rajapinta
 
 | Kutsu | Palauttaa |
 |---|---|
 | `JPTime.now()` | Olion, jossa on `time`, `date`, `iso`, `timestamp`, `parts`, `finland`, `aheadOfFinlandHours` ja `nextFinnishClockChange` |
-| `JPTime.format(aika, muoto)` | Ajan muotoiltuna merkkijonona JPTimessa |
+| `JPTime.format(aika, muoto, kieli)` | Ajan muotoiltuna merkkijonona JPTimessa. `kieli` on `"fi"` (oletus) tai `"en"`. |
 | `JPTime.toISOString(aika)` | Esimerkiksi `"2026-11-07T00:30:05.007+03:00"` |
-| `JPTime.parts(aika)` | `{ year, month, day, hours, minutes, seconds, weekday, weekdayName, monthName }` |
+| `JPTime.parts(aika, kieli)` | `{ year, month, day, hours, minutes, seconds, weekday, weekdayName, monthName }` |
 | `JPTime.finlandOffsetHours(aika)` | Suomen virallisen ajan poikkeaman UTC:stä tunteina: `2` tai `3` |
 | `JPTime.nextFinnishClockChange(aika)` | Seuraavan Suomen kellojen siirron `Date`-oliona |
 | `JPTime.watch(callback)` | Kutsuu `callback(JPTime.now())` joka sekunnin vaihteessa ja palauttaa pysäytysfunktion |
@@ -91,16 +92,16 @@ Esimerkki `JPTime.now()`-kutsun paluuarvosta:
 | Merkki | Esimerkki | | Merkki | Esimerkki |
 |---|---|---|---|---|
 | `YYYY` | 2026 | | `HH` / `H` | 09 / 9 |
-| `MMMM` | marraskuuta | | `mm` | 05 |
+| `MMMM` | marraskuuta / November | | `mm` | 05 |
 | `MM` / `M` | 03 / 3 | | `ss` | 07 |
 | `DD` / `D` | 07 / 7 | | `zz` | JPT |
-| `dddd` | lauantai | | `Z` | +03:00 |
+| `dddd` | lauantai / Saturday | | `Z` | +03:00 |
 
 Hakasulkeissa oleva teksti tulostuu sellaisenaan, esimerkiksi `[klo]`.
 
 Kirjasto toimii myös Nodessa: `const JPTime = require("./jptime.js")`.
 
-> GitHub Pages jakaa vain staattisia tiedostoja, joten se ei voi tarjota HTTP-rajapintaa, joka palauttaisi kellonajan JSON-muodossa. Sellaista ei tarvita, koska `jptime.js` laskee ajan suoraan selaimessa käyttäjän kellosta.
+> JPTime ei tarvitse palvelinta eikä HTTP-rajapintaa, koska `jptime.js` laskee ajan suoraan selaimessa käyttäjän kellosta.
 
 ## JPTime omalle koneelle
 
