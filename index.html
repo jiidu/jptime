@@ -1,0 +1,757 @@
+<!doctype html>
+<html lang="fi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="JPTime: ikuinen Suomen kesäaika, UTC+3 ilman kellojen siirtelyä.">
+<title>JPTime</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: kello kesätaivaalla, sen alla elävä järvimaisema (laituri, koivut, lehdet), sitten hiljaiset tiedot.
+   Valoisa teema on heinäkuun iltapäivä, tumma teema yötön yö. */
+:root {
+  --bg: #eef3e6;
+  --surface: #f8faf4;
+  --fg: #1b3324;
+  --muted: #5a6b5c;
+  --line: #d1dbc8;
+  --accent: #2f6e43;
+  --accent-soft: #dbe9cf;
+  --berry: #d98a2b;
+
+  --sky-top: #9fcbe8;
+  --sky-mid: #cbe4f1;
+  --hero-muted: #3f5d68;
+  --bar-track: rgba(27, 51, 36, 0.16);
+
+  --horizon: #f3f1dc;
+  --sun: #fff0b0;
+  --far: #6f8f78;
+  --island: #4b7155;
+  --water-far: #a9cfdf;
+  --water-near: #3f7c9a;
+  --glint: #ffffff;
+  --grass: #79a955;
+  --grass-dark: #557f3a;
+  --wood: #b48d60;
+  --wood-dark: #6f5236;
+  --bark: #f7f4ed;
+  --mark: #2b2a28;
+  --leaf-1: #5f9c3d;
+  --leaf-2: #8cc057;
+  --leaf-3: #bfd866;
+  --leaf-dark: #3f7a3a;
+  --scene-night: 0;
+
+  --font-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1a13; --surface: #16251b; --fg: #eef0ea; --muted: #a3b5a2;
+    --line: #26392c; --accent: #8fd08b; --accent-soft: #1c3223; --berry: #f0a94a;
+    --sky-top: #222b4c; --sky-mid: #4d4872; --hero-muted: #cdc7e0; --bar-track: rgba(255, 255, 255, 0.18);
+    --horizon: #eaa98a; --sun: #ffd49c; --far: #1f2a2c; --island: #161e1e;
+    --water-far: #b08e9a; --water-near: #232a46; --glint: #ffd9b0;
+    --grass: #2c472d; --grass-dark: #1d3320; --wood: #6a523a; --wood-dark: #3a2c21;
+    --bark: #dcd5ca; --mark: #121212;
+    --leaf-1: #3a6936; --leaf-2: #4f8243; --leaf-3: #6e9a4b; --leaf-dark: #21401f;
+    --scene-night: 1; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1a13; --surface: #16251b; --fg: #eef0ea; --muted: #a3b5a2;
+  --line: #26392c; --accent: #8fd08b; --accent-soft: #1c3223; --berry: #f0a94a;
+  --sky-top: #222b4c; --sky-mid: #4d4872; --hero-muted: #cdc7e0; --bar-track: rgba(255, 255, 255, 0.18);
+  --horizon: #eaa98a; --sun: #ffd49c; --far: #1f2a2c; --island: #161e1e;
+  --water-far: #b08e9a; --water-near: #232a46; --glint: #ffd9b0;
+  --grass: #2c472d; --grass-dark: #1d3320; --wood: #6a523a; --wood-dark: #3a2c21;
+  --bark: #dcd5ca; --mark: #121212;
+  --leaf-1: #3a6936; --leaf-2: #4f8243; --leaf-3: #6e9a4b; --leaf-dark: #21401f;
+  --scene-night: 1; color-scheme: dark;
+}
+html { background: var(--sky-top); }
+body {
+  margin: 0;
+  -webkit-text-size-adjust: 100%;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-display);
+  font-size: 16px;
+  line-height: 1.5;
+}
+code { font-family: var(--font-mono); }
+.wrap {
+  max-width: 760px;
+  margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid;
+  gap: 40px;
+}
+
+/* Taivas ja kello */
+.hero {
+  background: linear-gradient(var(--sky-top), var(--sky-mid));
+  padding-top: env(safe-area-inset-top, 0px);
+}
+.hero .wrap { padding-block: clamp(32px, 7vh, 72px) 8px; }
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--hero-muted);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  align-items: center;
+}
+.eyebrow b { color: var(--accent); font-weight: 600; }
+.clock { display: grid; gap: 10px; }
+.time {
+  font-weight: 800;
+  font-size: clamp(4rem, 18vw, 9.5rem);
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+}
+.time .sec { font-size: 0.38em; font-weight: 400; color: var(--hero-muted); margin-left: 0.15em; letter-spacing: 0; }
+.date { font-size: clamp(1.1rem, 3vw, 1.4rem); color: var(--hero-muted); }
+.date::first-letter { text-transform: uppercase; }
+.day { position: relative; height: 6px; border-radius: 3px; background: var(--bar-track); overflow: hidden; }
+.day span { position: absolute; inset: 0 auto 0 0; background: var(--accent); border-radius: 3px; }
+.daylabels {
+  display: flex; justify-content: space-between;
+  font-family: var(--font-mono); font-size: 0.72rem; color: var(--hero-muted);
+  margin-top: 6px;
+}
+
+/* Järvimaisema */
+.scene {
+  display: block;
+  width: 100%;
+  height: clamp(240px, 40vw, 440px);
+  background: var(--sky-mid);
+}
+
+/* Tiedot */
+main.wrap { padding-block: 8px 48px; }
+.status {
+  display: flex; gap: 14px; align-items: flex-start;
+  background: var(--accent-soft);
+  border-radius: 12px;
+  padding: 16px 18px;
+}
+.status .dot { flex: none; width: 10px; height: 10px; border-radius: 50%; background: var(--berry); margin-top: 8px; }
+.status p { margin: 0; }
+.status strong { font-weight: 600; }
+
+.compare { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 1px solid var(--line); }
+.compare > div { padding: 14px 0; display: grid; gap: 2px; min-width: 0; }
+.compare > div + div { padding-left: 16px; border-left: 1px solid var(--line); }
+.label {
+  font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--muted);
+}
+.val { font-size: 1.6rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+.sub { font-family: var(--font-mono); font-size: 0.8rem; color: var(--muted); }
+
+details { border-top: 1px solid var(--line); padding-top: 14px; }
+summary { cursor: pointer; font-weight: 600; width: fit-content; }
+summary:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+.defs { display: grid; gap: 18px; margin-top: 14px; }
+.def { display: grid; gap: 6px; min-width: 0; }
+.def p { margin: 0; color: var(--muted); font-size: 0.92rem; max-width: 62ch; }
+.def p code { color: var(--fg); }
+.code { display: flex; gap: 8px; align-items: stretch; }
+.code pre {
+  flex: 1; min-width: 0; margin: 0;
+  font-family: var(--font-mono); font-size: 0.85rem; line-height: 1.55;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 9px 12px;
+  overflow-x: auto;
+}
+.code button {
+  font: 500 0.8rem var(--font-mono);
+  background: transparent; color: var(--fg);
+  border: 1px solid var(--line); border-radius: 8px;
+  padding: 0 12px; cursor: pointer; align-self: flex-start; min-height: 38px;
+}
+.code button:hover { border-color: var(--accent); color: var(--accent); }
+.demo {
+  display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: baseline;
+  background: var(--surface); border: 1px dashed var(--line); border-radius: 8px; padding: 10px 12px;
+}
+.demo jp-time { font-weight: 600; font-variant-numeric: tabular-nums; }
+
+@media (max-width: 520px) {
+  .compare { grid-template-columns: 1fr; }
+  .compare > div + div { padding-left: 0; border-left: 0; border-top: 1px solid var(--line); }
+  .code { flex-direction: column; }
+  .code button { align-self: flex-end; }
+}
+</style>
+<script src="jptime.js"></script>
+</head>
+<body>
+<header class="hero">
+  <div class="wrap">
+    <section class="clock" aria-label="JPTime-kello">
+      <div class="eyebrow"><b>JPTime</b><span>JPT · UTC+03:00</span><span>Ikuinen Suomen kesäaika</span></div>
+      <div class="time" id="time">--:--<span class="sec">:--</span></div>
+      <div class="date" id="date">&nbsp;</div>
+      <div>
+        <div class="day" aria-hidden="true"><span id="dayfill" style="width:0%"></span></div>
+        <div class="daylabels" aria-hidden="true"><span>00</span><span>06</span><span>12</span><span>18</span><span>24</span></div>
+      </div>
+    </section>
+  </div>
+</header>
+
+<canvas class="scene" id="scene" role="img" aria-label="Kesäinen järvimaisema: puulaituri, tuulessa heiluvat koivut, lentäviä lehtiä ja kimmeltävä järvi."></canvas>
+
+<main class="wrap">
+  <div class="status" role="status">
+    <span class="dot" aria-hidden="true"></span>
+    <p id="statustext">&nbsp;</p>
+  </div>
+
+  <section class="compare" aria-label="Vertailu">
+    <div>
+      <span class="label">Suomen virallinen aika</span>
+      <span class="val" id="fi">--:--</span>
+      <span class="sub" id="fisub">&nbsp;</span>
+    </div>
+    <div>
+      <span class="label">Ero JPTimeen</span>
+      <span class="val" id="diff">–</span>
+      <span class="sub" id="diffsub">&nbsp;</span>
+    </div>
+    <div>
+      <span class="label">UTC</span>
+      <span class="val" id="utc">--:--</span>
+      <span class="sub">Koordinoitu yleisaika</span>
+    </div>
+  </section>
+
+  <details open>
+    <summary>JPTime omalle sivulle</summary>
+    <div class="defs">
+      <div class="def">
+        <span class="label">1. Lisää skripti</span>
+        <div class="code"><pre id="c1">&lt;script src="jptime.js"&gt;&lt;/script&gt;</pre><button type="button" data-target="c1">Kopioi</button></div>
+      </div>
+      <div class="def">
+        <span class="label">2a. Valmis kello ilman omaa koodia</span>
+        <div class="code"><pre id="c2">&lt;jp-time format="HH:mm"&gt;&lt;/jp-time&gt;</pre><button type="button" data-target="c2">Kopioi</button></div>
+        <div class="demo" aria-label="Esimerkkejä">
+          <jp-time format="HH:mm"></jp-time>
+          <jp-time format="dddd D. MMMM [klo] HH.mm.ss"></jp-time>
+          <jp-time format="YYYY-MM-DD HH:mm zz"></jp-time>
+        </div>
+        <p>Muotoilumerkit: <code>YYYY MMMM MM M DD D dddd HH H mm ss zz Z</code>. Hakasulkeissa oleva teksti, kuten <code>[klo]</code>, tulostuu sellaisenaan.</p>
+      </div>
+      <div class="def">
+        <span class="label">2b. JavaScript-rajapinta</span>
+        <div class="code"><pre id="c3">JPTime.now()            // { time, date, iso, finland, aheadOfFinlandHours, … }
+JPTime.format(new Date(), "HH.mm")
+JPTime.toISOString()    // "2026-11-07T00:30:05.000+03:00"
+const stop = JPTime.watch(t =&gt; console.log(t.time))</pre><button type="button" data-target="c3">Kopioi</button></div>
+      </div>
+      <div class="def">
+        <span class="label">Komentorivi (Linux, macOS, WSL)</span>
+        <div class="code"><pre id="c4">TZ="JPT-3" date</pre><button type="button" data-target="c4">Kopioi</button></div>
+        <p>POSIX-muodossa etumerkki on käänteinen, joten <code>JPT-3</code> tarkoittaa UTC+3:a. Kesäaikasääntöä ei ole, joten kello ei siirry koskaan.</p>
+      </div>
+    </div>
+  </details>
+</main>
+
+<script>
+/* Kello ja tiedot */
+(function () {
+  const el = id => document.getElementById(id);
+  const pad = n => String(n).padStart(2, "0");
+
+  if (location.protocol.startsWith("http")) {
+    el("c1").textContent = '<script src="' + new URL("jptime.js", location.href).href + '"><\/script>';
+  }
+
+  let lastStatusKey = "";
+  JPTime.watch(function (t) {
+    const p = t.parts;
+    el("time").innerHTML = pad(p.hours) + ":" + pad(p.minutes) + '<span class="sec">:' + pad(p.seconds) + "</span>";
+    el("date").textContent = JPTime.format(t.timestamp, "dddd D. MMMM YYYY");
+    el("dayfill").style.width = ((p.hours * 3600 + p.minutes * 60 + p.seconds) / 864).toFixed(2) + "%";
+
+    const fo = JPTime.finlandOffsetHours(t.timestamp);
+    const f = new Date(t.timestamp + fo * 3600000);
+    el("fi").textContent = pad(f.getUTCHours()) + ":" + pad(f.getUTCMinutes());
+    el("fisub").textContent = (t.finland.isSummerTime ? "EEST, kesäaika" : "EET, talviaika") + " · UTC" + t.finland.offset;
+
+    const d = t.aheadOfFinlandHours;
+    el("diff").textContent = d === 0 ? "0 h" : "+" + d + " h";
+    el("diffsub").textContent = d === 0 ? "Kellot ovat samassa ajassa" : "JPTime on edellä";
+
+    const u = new Date(t.timestamp);
+    el("utc").textContent = pad(u.getUTCHours()) + ":" + pad(u.getUTCMinutes());
+
+    const key = fo + ":" + t.nextFinnishClockChange;
+    if (key !== lastStatusKey) {
+      lastStatusKey = key;
+      const nc = new Date(t.nextFinnishClockChange);
+      const ncFi = new Date(nc.getTime() + fo * 3600000);
+      const day = ncFi.getUTCDate() + "." + (ncFi.getUTCMonth() + 1) + "." + ncFi.getUTCFullYear();
+      el("statustext").innerHTML = t.finland.isSummerTime
+        ? "<strong>Nyt on kesäaika, joten JPTime ja Suomen aika ovat samat.</strong> Suomi siirtyy talviaikaan " + day + ". JPTime ei siirry, vaan on sen jälkeen tunnin edellä."
+        : "<strong>Suomessa on talviaika, joten JPTime on tunnin edellä.</strong> Kellot ovat taas samassa ajassa " + day + " alkaen, kun Suomi siirtyy kesäaikaan.";
+    }
+  });
+
+  document.querySelectorAll(".code button").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const code = el(btn.dataset.target);
+      const reset = (txt, ms) => { btn.textContent = txt; setTimeout(() => btn.textContent = "Kopioi", ms); };
+      const fallback = () => {
+        const r = document.createRange(); r.selectNodeContents(code);
+        const s = getSelection(); s.removeAllRanges(); s.addRange(r);
+        reset("Ctrl+C", 2000);
+      };
+      try { navigator.clipboard.writeText(code.textContent).then(() => reset("Kopioitu", 1500), fallback); }
+      catch (e) { fallback(); }
+    });
+  });
+})();
+
+/* Järvimaisema: laituri, koivut, lehdet ja järvi */
+(function () {
+  const canvas = document.getElementById("scene");
+  const ctx = canvas.getContext("2d");
+  const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)");
+  const TAU = Math.PI * 2;
+  let W = 0, H = 0, dpr = 1, s = 1, hz = 0;
+  let C = {}, L = null, raf = 0, visible = true, t = 0, last = 0;
+  const leafBuckets = [[], [], []];
+
+  function rng(seed) {
+    return function () { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
+  }
+  function rgba(hex, a) {
+    const h = hex.replace("#", "");
+    const n = parseInt(h.length === 3 ? h.split("").map(c => c + c).join("") : h, 16);
+    return "rgba(" + (n >> 16 & 255) + "," + (n >> 8 & 255) + "," + (n & 255) + "," + a + ")";
+  }
+  function readColors() {
+    const cs = getComputedStyle(document.documentElement);
+    ["bg", "sky-mid", "horizon", "sun", "far", "island", "water-far", "water-near", "glint", "grass",
+     "grass-dark", "wood", "wood-dark", "bark", "mark", "leaf-1", "leaf-2", "leaf-3", "leaf-dark"]
+      .forEach(n => C[n] = cs.getPropertyValue("--" + n).trim());
+    C.night = cs.getPropertyValue("--scene-night").trim() === "1";
+  }
+
+  const leftEnd = () => W * 0.26;
+  const rightStart = () => W * 0.56;
+  function leftY(x) { const u = Math.min(1, x / leftEnd()); return H - H * 0.19 * Math.cos(u * Math.PI / 2); }
+  function rightY(x) { const u = Math.max(0, (x - rightStart()) / (W - rightStart())); return H - H * 0.30 * Math.sin(u * Math.PI / 2); }
+
+  function heightmap(R, x0, x1, base, count, hMin, hMax) {
+    const cols = Math.ceil((x1 - x0) / 2) + 1;
+    const arr = new Float32Array(cols);
+    for (let i = 0; i < cols; i++) arr[i] = base(x0 + i * 2);
+    for (let k = 0; k < count; k++) {
+      const x = x0 + R() * (x1 - x0);
+      const h = (hMin + R() * (hMax - hMin)) * s;
+      const w = h * (0.34 + R() * 0.12);
+      const b = base(x);
+      const i0 = Math.max(0, Math.floor((x - w / 2 - x0) / 2)), i1 = Math.min(cols - 1, Math.ceil((x + w / 2 - x0) / 2));
+      for (let i = i0; i <= i1; i++) {
+        const d = Math.abs(x0 + i * 2 - x) / (w / 2);
+        if (d < 1) arr[i] = Math.max(arr[i], b + h * (1 - d));
+      }
+    }
+    return { x0, arr };
+  }
+
+  function build() {
+    const R = rng(1977);
+    s = Math.max(0.6, H / 360);
+    hz = H * 0.40;
+
+    const hill = x => (Math.sin(x / W * 5.1) * 0.5 + Math.sin(x / W * 13.7 + 1) * 0.25 + 0.9);
+    const forest = heightmap(R, -4, W + 4, x => 5 * s * hill(x), Math.round(W / 4), 9, 24);
+    const ix0 = W * 0.47, ix1 = W * 0.66, iy = hz + (H - hz) * 0.07;
+    const island = heightmap(R, ix0, ix1, x => {
+      const u = (x - ix0) / (ix1 - ix0); return Math.max(0, Math.sin(u * Math.PI)) * 7 * s;
+    }, Math.round((ix1 - ix0) / 5), 10, 30);
+    // pidä saaren kuuset saaren päällä
+    for (let i = 0; i < island.arr.length; i++) {
+      const u = (i * 2) / (ix1 - ix0);
+      island.arr[i] *= Math.min(1, Math.sin(Math.max(0, Math.min(1, u)) * Math.PI) * 2.2);
+    }
+
+    const sun = C.night ? { x: W * 0.70, y: hz - H * 0.015, r: H * 0.05 } : { x: W * 0.82, y: hz - H * 0.27, r: H * 0.034 };
+
+    const glints = [];
+    for (let i = 0; i < 80; i++) {
+      const dz = Math.pow(R(), 1.5);
+      glints.push({ x: R() * W, y: hz + 4 + (H * 0.9 - hz) * dz, len: (5 + R() * 26) * s * (0.35 + dz), ph: R() * TAU, sp: 0.4 + R() * 0.8 });
+    }
+    const sunGlints = [];
+    for (let i = 0; i < 34; i++) {
+      const dz = Math.pow(R(), 1.3);
+      sunGlints.push({ x: sun.x + (R() - 0.5) * W * 0.05 * (0.4 + dz * 2.5), y: hz + 3 + (H * 0.8 - hz) * dz, len: (4 + R() * 18) * s * (0.4 + dz), ph: R() * TAU, sp: 0.8 + R() * 1.2 });
+    }
+
+    const nearY = H * 1.03, farY = hz + (H - hz) * 0.36;
+    const dock = {
+      nearY, farY,
+      nearCx: W * 0.31, nearHw: Math.max(W * 0.10, 44),
+      farCx: W * 0.385, farHw: Math.max(W * 0.032, 13),
+      n: 16, r: 0.85
+    };
+
+    const blades = [];
+    const addBlades = (x0, x1, fy, n) => {
+      for (let i = 0; i < n; i++) {
+        const x = x0 + R() * (x1 - x0);
+        blades.push({ x, y: fy(x) + 3, h: (5 + R() * 13) * s, ph: R() * TAU, c: R() < 0.5 ? 0 : 1 });
+      }
+    };
+    addBlades(0, leftEnd(), leftY, Math.round(W / 9));
+    addBlades(rightStart(), W, rightY, Math.round(W / 6));
+
+    const birchDefs = [
+      { x: W * 0.84, h: 0.70 }, { x: W * 0.94, h: 0.60 }, { x: W * 0.73, h: 0.52 }, { x: W * 0.06, h: 0.62 }
+    ];
+    const birches = birchDefs.map(d => {
+      const h = H * d.h;
+      const y = (d.x < W / 2 ? leftY(d.x) : rightY(d.x)) + 4;
+      const tr = { x: d.x, y, h, w: Math.max(5, H * 0.03) * d.h, lean: (R() - 0.5) * 0.12, ph: R() * TAU, marks: [], blobs: [], branches: [] };
+      for (let i = 0; i < 22; i++) {
+        const f = R() * 0.9;
+        tr.marks.push({ f, o: R() * 0.55, l: 0.25 + R() * 0.4, th: (f < 0.12 ? 2 + R() * 3 : 0.8 + R() * 1.6) * s });
+      }
+      for (let i = 0; i < 26; i++) {
+        tr.blobs.push({ f: 0.5 + R() * 0.45, dx: (R() - 0.5) * h * 0.36, dy: (R() - 0.2) * h * 0.14, r: h * (0.02 + R() * 0.035) });
+      }
+      for (let i = 0; i < 13; i++) {
+        const dir = i % 2 ? 1 : -1;
+        const b = { f: 0.42 + R() * 0.55, dir, dx: dir * h * (0.07 + R() * 0.14), dy: -R() * h * 0.08, strands: [] };
+        const ns = 3 + Math.floor(R() * 2);
+        for (let k = 0; k < ns; k++) {
+          b.strands.push({ u: 0.3 + R() * 0.7, len: h * (0.08 + R() * 0.17), ph: R() * TAU, n: 6 + Math.floor(R() * 4), c: Math.floor(R() * 3) });
+        }
+        tr.branches.push(b);
+      }
+      return tr;
+    });
+
+    const flyers = [];
+    for (let i = 0; i < 16; i++) {
+      flyers.push({ x: R() * W, y: R() * H * 0.75, size: (2.6 + R() * 2.4) * s, ph: R() * TAU, rot: R() * TAU, rs: (R() - 0.5) * 3, c: Math.floor(R() * 3), sp: 0.7 + R() * 0.6 });
+    }
+
+    L = { forest, island, iy, sun, glints, sunGlints, dock, blades, birches, flyers, R };
+  }
+
+  function drawHeightmap(hm, baseY, color, mirror, alpha) {
+    ctx.fillStyle = alpha < 1 ? rgba(color, alpha) : color;
+    ctx.beginPath();
+    ctx.moveTo(hm.x0, baseY);
+    for (let i = 0; i < hm.arr.length; i++) {
+      ctx.lineTo(hm.x0 + i * 2, mirror ? baseY + hm.arr[i] * 0.8 : baseY - hm.arr[i]);
+    }
+    ctx.lineTo(hm.x0 + (hm.arr.length - 1) * 2, baseY);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  function drawDock(time) {
+    const d = L.dock;
+    const span = d.nearY - d.farY;
+    const at = y => { const u = (y - d.farY) / span; return { cx: d.farCx + (d.nearCx - d.farCx) * u, hw: d.farHw + (d.nearHw - d.farHw) * u }; };
+    const rn = Math.pow(d.r, d.n);
+    const ys = [];
+    for (let i = 0; i <= d.n; i++) ys.push(d.farY + span * (Math.pow(d.r, i) - rn) / (1 - rn));
+
+    // tolpat, heijastukset ja renkaat
+    const posts = [];
+    [d.n, Math.round(d.n * 0.55), Math.round(d.n * 0.3)].forEach(i => {
+      const y = ys[i], e = at(y), k = e.hw / d.nearHw;
+      const ph = d.nearHw * 0.75 * k + 4 * s;
+      posts.push({ x: e.cx - e.hw * 0.92, y, ph, w: Math.max(2, e.hw * 0.12) });
+      posts.push({ x: e.cx + e.hw * 0.92, y, ph, w: Math.max(2, e.hw * 0.12) });
+    });
+    posts.forEach(p => {
+      ctx.fillStyle = rgba(C["wood-dark"], 0.35);
+      for (let j = 0; j < 4; j++) {
+        const wob = Math.sin(time * 2.2 + p.y * 0.1 + j) * 1.4 * s;
+        ctx.fillRect(p.x - p.w / 2 + wob, p.y + p.ph + j * p.ph * 0.2, p.w, p.ph * 0.18);
+      }
+      ctx.fillStyle = C["wood-dark"];
+      ctx.fillRect(p.x - p.w / 2, p.y, p.w, p.ph);
+      const ring = (time * 0.5 + p.x * 0.01) % 1;
+      ctx.strokeStyle = rgba(C.glint, 0.45 * (1 - ring));
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.ellipse(p.x, p.y + p.ph, p.w * (0.8 + ring * 2.2), p.w * (0.25 + ring * 0.6), 0, 0, TAU);
+      ctx.stroke();
+    });
+
+    const nearE = at(d.nearY), farE = at(d.farY);
+
+    // tikkaat laiturin päässä: vain kaiteet näkyvät kannen yläpuolella,
+    // veteen menevä osa jää laiturin taakse
+    const lx = farE.cx + farE.hw * 0.35, lw = farE.hw * 0.4, top = d.farY - farE.hw * 0.45;
+    ctx.strokeStyle = C.bark;
+    ctx.lineWidth = Math.max(1, s * 0.9);
+    ctx.beginPath();
+    [lx, lx + lw].forEach(x => {
+      ctx.moveTo(x, d.farY + 2);
+      ctx.quadraticCurveTo(x, top, x - farE.hw * 0.12, top);
+    });
+    ctx.stroke();
+
+    // reunalaudat
+    const thN = d.nearHw * 0.13, thF = d.farHw * 0.13;
+    ctx.fillStyle = C["wood-dark"];
+    ctx.beginPath();
+    ctx.moveTo(nearE.cx - nearE.hw, d.nearY); ctx.lineTo(farE.cx - farE.hw, d.farY);
+    ctx.lineTo(farE.cx - farE.hw, d.farY + thF); ctx.lineTo(nearE.cx - nearE.hw, d.nearY + thN);
+    ctx.moveTo(nearE.cx + nearE.hw, d.nearY); ctx.lineTo(farE.cx + farE.hw, d.farY);
+    ctx.lineTo(farE.cx + farE.hw, d.farY + thF); ctx.lineTo(nearE.cx + nearE.hw, d.nearY + thN);
+    ctx.moveTo(farE.cx - farE.hw, d.farY); ctx.lineTo(farE.cx + farE.hw, d.farY);
+    ctx.lineTo(farE.cx + farE.hw, d.farY + thF); ctx.lineTo(farE.cx - farE.hw, d.farY + thF);
+    ctx.fill();
+
+    // kansi
+    const deck = ctx.createLinearGradient(0, d.farY, 0, d.nearY);
+    deck.addColorStop(0, rgba(C.wood, 0.9));
+    deck.addColorStop(1, C.wood);
+    ctx.fillStyle = deck;
+    ctx.beginPath();
+    ctx.moveTo(nearE.cx - nearE.hw, d.nearY); ctx.lineTo(farE.cx - farE.hw, d.farY);
+    ctx.lineTo(farE.cx + farE.hw, d.farY); ctx.lineTo(nearE.cx + nearE.hw, d.nearY);
+    ctx.closePath(); ctx.fill();
+
+    ctx.strokeStyle = rgba(C["wood-dark"], 0.55);
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    for (let i = 1; i < d.n; i++) { const e = at(ys[i]); ctx.moveTo(e.cx - e.hw, ys[i]); ctx.lineTo(e.cx + e.hw, ys[i]); }
+    ctx.stroke();
+  }
+
+  function drawBirch(tr, time, wind, lr) {
+    const sway = (Math.sin(time * 0.9 + tr.ph) * 0.5 + (wind - 0.6) * 1.4 + 0.25) * tr.h * 0.03;
+    const P = f => ({ x: tr.x + tr.lean * f * tr.h + sway * f * f, y: tr.y - f * tr.h });
+
+    ctx.fillStyle = rgba(C["leaf-dark"], 0.38);
+    ctx.beginPath();
+    tr.blobs.forEach(b => {
+      const p = P(b.f), bx = p.x + b.dx + sway * 0.25;
+      ctx.moveTo(bx + b.r, p.y + b.dy); ctx.arc(bx, p.y + b.dy, b.r, 0, TAU);
+    });
+    ctx.fill();
+
+    ctx.fillStyle = C.bark;
+    ctx.beginPath();
+    const N = 14;
+    for (let i = 0; i <= N; i++) { const f = i / N * 0.97, p = P(f), w = tr.w * (1 - 0.8 * f) / 2; i ? ctx.lineTo(p.x - w, p.y) : ctx.moveTo(p.x - w, p.y); }
+    for (let i = N; i >= 0; i--) { const f = i / N * 0.97, p = P(f), w = tr.w * (1 - 0.8 * f) / 2; ctx.lineTo(p.x + w, p.y); }
+    ctx.closePath(); ctx.fill();
+
+    ctx.fillStyle = C.mark;
+    tr.marks.forEach(m => {
+      const p = P(m.f), w = tr.w * (1 - 0.8 * m.f);
+      ctx.fillRect(p.x - w / 2 + m.o * w, p.y, m.l * w, m.th);
+    });
+
+    ctx.strokeStyle = rgba(C.mark, 0.5);
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    tr.branches.forEach(b => {
+      const p = P(b.f), ex = p.x + b.dx + sway * 0.5 * b.f, ey = p.y + b.dy;
+      const lift = Math.abs(b.dx) * 0.25;
+      ctx.moveTo(p.x, p.y);
+      ctx.quadraticCurveTo(p.x + b.dx * 0.45, ey - lift, ex, ey);
+      b.strands.forEach(st => {
+        const sx = p.x + (ex - p.x) * st.u, sy = p.y + (ey - p.y) * st.u - lift * Math.sin(Math.PI * st.u) * 0.5;
+        const sw = (Math.sin(time * 1.7 + st.ph) * 0.6 + wind * 0.7) * st.len * 0.3;
+        const cx = sx + sw * 0.2 + b.dir * st.len * 0.1, cy = sy + st.len * 0.45, tx = sx + sw, ty = sy + st.len;
+        ctx.moveTo(sx, sy); ctx.quadraticCurveTo(cx, cy, tx, ty);
+        for (let k = 1; k <= st.n; k++) {
+          const q = k / st.n, a = 1 - q;
+          leafBuckets[(k + st.c) % 3].push(a * a * sx + 2 * a * q * cx + q * q * tx, a * a * sy + 2 * a * q * cy + q * q * ty);
+        }
+      });
+    });
+    ctx.stroke();
+  }
+
+  function draw(time, dt) {
+    if (!L || W === 0) return;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const wind = 0.6 + 0.4 * Math.sin(time * 0.23) + 0.25 * Math.sin(time * 0.71 + 1);
+
+    // taivas
+    const sky = ctx.createLinearGradient(0, 0, 0, hz);
+    sky.addColorStop(0, C["sky-mid"]);
+    sky.addColorStop(1, C.horizon);
+    ctx.fillStyle = sky;
+    ctx.fillRect(0, 0, W, hz + 1);
+
+    // aurinko
+    const sun = L.sun;
+    const glow = ctx.createRadialGradient(sun.x, sun.y, 0, sun.x, sun.y, sun.r * (C.night ? 9 : 6));
+    glow.addColorStop(0, rgba(C.sun, C.night ? 0.75 : 0.6));
+    glow.addColorStop(1, rgba(C.sun, 0));
+    ctx.fillStyle = glow;
+    ctx.fillRect(0, 0, W, hz);
+    ctx.fillStyle = C.sun;
+    ctx.beginPath(); ctx.arc(sun.x, sun.y, sun.r, 0, TAU); ctx.fill();
+
+    // vastaranta
+    drawHeightmap(L.forest, hz + 1, C.far, false, 1);
+
+    // järvi
+    const water = ctx.createLinearGradient(0, hz, 0, H);
+    water.addColorStop(0, C["water-far"]);
+    water.addColorStop(1, C["water-near"]);
+    ctx.fillStyle = water;
+    ctx.fillRect(0, hz, W, H - hz);
+    drawHeightmap(L.forest, hz, C.far, true, 0.32);
+
+    // saari
+    drawHeightmap(L.island, L.iy + 1, C.island, false, 1);
+    drawHeightmap(L.island, L.iy, C.island, true, 0.3);
+
+    // kimallus
+    ctx.lineWidth = Math.max(1, s * 0.8);
+    ctx.lineCap = "round";
+    const glint = (g, a, drift) => {
+      const al = a * (0.5 + 0.5 * Math.sin(time * g.sp + g.ph));
+      if (al < 0.03) return;
+      const x = g.x + Math.sin(time * 0.35 * g.sp + g.ph) * drift * s;
+      ctx.strokeStyle = rgba(C.glint, al);
+      ctx.beginPath(); ctx.moveTo(x, g.y); ctx.lineTo(x + g.len, g.y); ctx.stroke();
+    };
+    L.glints.forEach(g => glint(g, 0.45, 6));
+    L.sunGlints.forEach(g => glint(g, 0.85, 3));
+
+    drawDock(time);
+
+    // rantaniityt
+    ctx.fillStyle = C.grass;
+    ctx.beginPath();
+    ctx.moveTo(0, H); ctx.lineTo(0, leftY(0));
+    for (let x = 0; x <= leftEnd(); x += 4) ctx.lineTo(x, leftY(x));
+    ctx.lineTo(leftEnd(), H); ctx.closePath();
+    ctx.moveTo(rightStart(), H);
+    for (let x = rightStart(); x <= W; x += 4) ctx.lineTo(x, rightY(x));
+    ctx.lineTo(W, rightY(W)); ctx.lineTo(W, H); ctx.closePath();
+    ctx.fill();
+
+    const lr = Math.max(1.5, H * 0.0068);
+    leafBuckets.forEach(b => b.length = 0);
+    L.birches.forEach(tr => drawBirch(tr, time, wind, lr));
+    ["leaf-1", "leaf-2", "leaf-3"].forEach((c, i) => {
+      const b = leafBuckets[i];
+      ctx.fillStyle = C[c];
+      ctx.beginPath();
+      for (let k = 0; k < b.length; k += 2) { ctx.moveTo(b[k] + lr, b[k + 1]); ctx.arc(b[k], b[k + 1], lr, 0, TAU); }
+      ctx.fill();
+    });
+
+    // heinät
+    ctx.lineWidth = Math.max(1, s * 0.9);
+    [C["grass-dark"], C["leaf-2"]].forEach((col, ci) => {
+      ctx.strokeStyle = col;
+      ctx.beginPath();
+      L.blades.forEach(bl => {
+        if (bl.c !== ci) return;
+        const bend = (Math.sin(time * 2 + bl.ph) * 0.4 + wind * 0.6) * bl.h * 0.4;
+        ctx.moveTo(bl.x, bl.y); ctx.quadraticCurveTo(bl.x + bend * 0.3, bl.y - bl.h * 0.6, bl.x + bend, bl.y - bl.h);
+      });
+      ctx.stroke();
+    });
+
+    // lentävät lehdet
+    L.flyers.forEach(f => {
+      if (dt) {
+        f.x += (14 + wind * 34) * f.sp * s * dt;
+        f.y += (5 + Math.sin(time * 1.3 + f.ph) * 16) * s * dt;
+        f.rot += f.rs * dt;
+        if (f.x > W + 12) { f.x = -12; f.y = L.R() * H * 0.6; }
+        if (f.y > H + 12) { f.y = H * 0.05; f.x = L.R() * W; }
+      }
+      const flip = Math.abs(Math.cos(time * 2.6 + f.ph));
+      ctx.save();
+      ctx.translate(f.x, f.y);
+      ctx.rotate(f.rot);
+      ctx.fillStyle = C[["leaf-1", "leaf-2", "leaf-3"][f.c]];
+      ctx.beginPath();
+      ctx.moveTo(-f.size, 0);
+      ctx.quadraticCurveTo(0, -f.size * (0.25 + 0.6 * flip), f.size, 0);
+      ctx.quadraticCurveTo(0, f.size * (0.25 + 0.6 * flip), -f.size, 0);
+      ctx.fill();
+      ctx.restore();
+    });
+
+    // sulautus sivun taustaan
+    const fade = ctx.createLinearGradient(0, H * 0.84, 0, H);
+    fade.addColorStop(0, rgba(C.bg, 0));
+    fade.addColorStop(1, C.bg);
+    ctx.fillStyle = fade;
+    ctx.fillRect(0, H * 0.84, W, H * 0.16 + 1);
+  }
+
+  function frame(now) {
+    const dt = Math.min(0.05, (now - last) / 1000 || 0);
+    last = now;
+    t += dt;
+    draw(t, dt);
+    raf = requestAnimationFrame(frame);
+  }
+  function stop() { cancelAnimationFrame(raf); raf = 0; }
+  function start() {
+    stop();
+    if (reduceMotion.matches || !visible) { draw(t || 4, 0); return; }
+    last = performance.now();
+    raf = requestAnimationFrame(frame);
+  }
+  function layout() {
+    const r = canvas.getBoundingClientRect();
+    W = r.width; H = r.height;
+    if (!W || !H) return;
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = Math.round(W * dpr);
+    canvas.height = Math.round(H * dpr);
+    readColors();
+    build();
+    draw(t || 4, 0);
+  }
+  function refreshTheme() { readColors(); build(); draw(t || 4, 0); }
+
+  new ResizeObserver(layout).observe(canvas);
+  new MutationObserver(refreshTheme).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+  matchMedia("(prefers-color-scheme: dark)").addEventListener("change", refreshTheme);
+  reduceMotion.addEventListener("change", start);
+  new IntersectionObserver(entries => {
+    visible = entries[0].isIntersecting;
+    start();
+  }).observe(canvas);
+  layout();
+  start();
+})();
+</script>
+</body>
+</html>
