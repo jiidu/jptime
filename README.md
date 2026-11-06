@@ -2,23 +2,6 @@
 
 *Suomeksi · [In English](README.en.md)*
 
-**JPTime on ikuinen Suomen kesäaika: UTC+3 ympäri vuoden ilman kellojen siirtelyä.**
-
-Repositoriossa on neljä tiedostoa:
-
-- `index.html` on kellosivu.
-- `jptime.js` on rajapinta, jolla JPTimen saa omalle sivulle.
-- `README.md` on tämä ohje.
-- `README.en.md` on sama ohje englanniksi.
-
-Sivu näyttää JPTimen kellonajan ja vertaa sitä Suomen viralliseen aikaan ja UTC:hen. Se kertoo myös, ovatko kellot nyt samassa ajassa ja milloin tilanne seuraavan kerran muuttuu.
-
-Kellon alla on elävä suomalainen kesämaisema: puulaituri, tuulessa heiluvat riippakoivut, lentävät lehdet ja kimmeltävä järvi. Vaaleassa teemassa on heinäkuun iltapäivä ja tummassa yötön yö. Jos laitteessa on valittu vähennetty liike, maisema pysyy paikallaan.
-
-Sivu on suomeksi ja englanniksi. Kieltä voi vaihtaa oikean yläkulman FI/EN-valitsimesta. Sivu muistaa valinnan, ja englanninkielisen sivun saa suoraan linkillä, jonka loppuun on lisätty `#en`. Ensimmäisellä käynnillä kieli valitaan selaimen kielen mukaan.
-
-Sivu ei tarvitse build-vaihetta. Ulkoisia riippuvuuksia ovat vain Google Fonts -fontit. Jos ne eivät lataudu, sivu käyttää järjestelmän fontteja.
-
 ## Miksi JPTime?
 
 Koska kellojen siirtely on turhaa.

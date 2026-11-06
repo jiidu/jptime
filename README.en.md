@@ -2,23 +2,6 @@
 
 *[Suomeksi](README.md) · In English*
 
-**JPTime is permanent Finnish summer time: UTC+3 all year round, with no clock changes.**
-
-The repository contains four files:
-
-- `index.html` is the clock page.
-- `jptime.js` is the API for adding JPTime to your own site.
-- `README.md` is the Finnish version of this guide.
-- `README.en.md` is this guide.
-
-The page shows the current time in JPTime and compares it with official Finnish time and UTC. It also tells you whether the two clocks currently agree and when that will next change.
-
-Below the clock is a living Finnish summer landscape: a wooden jetty, weeping birches swaying in the wind, drifting leaves and a glittering lake. The light theme is a July afternoon and the dark theme is the midnight sun. If the device is set to reduce motion, the landscape stays still.
-
-The page is available in Finnish and English. Switch the language with the FI/EN toggle in the top right corner. The page remembers your choice, and you can link straight to the English page by adding `#en` to the end of the address. On a first visit, the page picks the language based on the browser's language.
-
-The page needs no build step. Its only external dependency is Google Fonts. If the fonts fail to load, the page falls back to system fonts.
-
 ## Why JPTime?
 
 Because changing the clocks is pointless.

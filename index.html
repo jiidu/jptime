@@ -184,6 +184,29 @@ main.wrap { padding-block: 8px 48px; }
 .val { font-size: 1.6rem; font-weight: 600; font-variant-numeric: tabular-nums; }
 .sub { font-family: var(--font-mono); font-size: 0.8rem; color: var(--muted); }
 
+.why { display: grid; gap: 14px; border-top: 1px solid var(--line); padding-top: 28px; }
+.why h2 {
+  margin: 0;
+  font-size: clamp(1.6rem, 4.5vw, 2.2rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  text-wrap: balance;
+}
+.why .lead { margin: 0; font-size: 1.2rem; font-weight: 600; color: var(--accent); }
+.why p { margin: 0; max-width: 62ch; }
+.why ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 12px; max-width: 62ch; }
+.why li { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 12px; align-items: start; }
+.why li::before {
+  content: ""; width: 8px; height: 8px; border-radius: 50%;
+  background: var(--berry); margin-top: 0.6em;
+}
+.why .table-wrap { overflow-x: auto; }
+.why table { border-collapse: collapse; min-width: 100%; font-variant-numeric: tabular-nums; }
+.why th, .why td { text-align: left; padding: 10px 16px 10px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+.why th { font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); font-weight: 500; }
+.why td.jpt { color: var(--accent); font-weight: 600; }
+
 details { border-top: 1px solid var(--line); padding-top: 14px; }
 summary { cursor: pointer; font-weight: 600; width: fit-content; }
 summary:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
@@ -270,6 +293,27 @@ summary:focus-visible, button:focus-visible { outline: 2px solid var(--accent); 
     </div>
   </section>
 
+  <section class="why" id="why" data-i18n="why">
+    <h2>Miksi JPTime?</h2>
+    <p class="lead">Koska kellojen siirtely on turhaa.</p>
+    <p>Kellot siirretään kahdesti vuodessa. Se ei säästä mitään, mutta sotkee kaiken muun:</p>
+    <ul>
+      <li><span><strong>Ihmiset</strong> nukkuvat huonosti vielä päiviä siirron jälkeen. Aamut tuntuvat väärältä, ja kalenterit, muistutukset ja kokousajat menevät helposti sekaisin.</span></li>
+      <li><span><strong>Koirat</strong> eivät tiedä mitään kesäajasta. Koiran sisäinen kello sanoo, että nyt mennään lenkille ja nyt syödään. Kun ihmisten kello hyppää tunnilla, koira joutuu odottamaan tai sitä herätetään liian aikaisin, eikä kumpikaan ymmärrä miksi.</span></li>
+    </ul>
+    <p>EU päätti jo vuonna 2019, että kellojen siirtelystä luovutaan. Kellot kuitenkin siirtyvät yhä, koska jäsenmaat eivät ole päässeet sopuun siitä, kumpi aika jää voimaan.</p>
+    <p>JPTime ei jää odottamaan. Se valitsee kesäajan ja pysyy siinä:</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th></th><th>Suomen virallinen aika</th><th>JPTime</th></tr></thead>
+        <tbody>
+          <tr><td>Kesällä</td><td>UTC+3 (EEST)</td><td class="jpt">UTC+3</td></tr>
+          <tr><td>Talvella</td><td>UTC+2 (EET)</td><td class="jpt">UTC+3, eli tunnin edellä</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
   <details open>
     <summary data-i18n="apiSummary">JPTime omalle sivulle</summary>
     <div class="defs">
@@ -322,6 +366,7 @@ const stop = JPTime.watch(t =&gt; console.log(t.time))</pre><button type="button
       fiLabel: "Suomen virallinen aika",
       diffLabel: "Ero JPTimeen",
       utcSub: "Koordinoitu yleisaika",
+      why: null, // suomenkielinen teksti on suoraan HTML:ssä
       apiSummary: "JPTime omalle sivulle",
       step1: "1. Lisää skripti",
       step2a: "2a. Valmis kello ilman omaa koodia",
@@ -346,6 +391,25 @@ const stop = JPTime.watch(t =&gt; console.log(t.time))</pre><button type="button
       fiLabel: "Official Finnish time",
       diffLabel: "Difference",
       utcSub: "Coordinated Universal Time",
+      why: `
+    <h2>Why JPTime?</h2>
+    <p class="lead">Because changing the clocks is pointless.</p>
+    <p>The clocks change twice a year. It saves nothing, and it disrupts everything else:</p>
+    <ul>
+      <li><span><strong>People</strong> sleep badly for days after the change. Mornings feel wrong, and calendars, reminders and meeting times easily get mixed up.</span></li>
+      <li><span><strong>Dogs</strong> know nothing about daylight saving time. A dog's internal clock says when it is time for a walk and when it is time to eat. When the humans' clock jumps by an hour, the dog either has to wait or gets woken too early, and neither of them understands why.</span></li>
+    </ul>
+    <p>The EU decided back in 2019 to stop changing the clocks. The clocks still change, because the member states have not agreed on which time to keep.</p>
+    <p>JPTime does not wait. It chooses summer time and stays there:</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th></th><th>Official Finnish time</th><th>JPTime</th></tr></thead>
+        <tbody>
+          <tr><td>Summer</td><td>UTC+3 (EEST)</td><td class="jpt">UTC+3</td></tr>
+          <tr><td>Winter</td><td>UTC+2 (EET)</td><td class="jpt">UTC+3, one hour ahead</td></tr>
+        </tbody>
+      </table>
+    </div>`,
       apiSummary: "JPTime on your own site",
       step1: "1. Add the script",
       step2a: "2a. Ready-made clock, no code needed",
@@ -364,6 +428,7 @@ const stop = JPTime.watch(t =&gt; console.log(t.time))</pre><button type="button
     }
   };
 
+  T.fi.why = document.getElementById("why").innerHTML;
   let lang = "fi";
   try {
     const fromHash = location.hash.slice(1);
