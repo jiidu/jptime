@@ -9,7 +9,7 @@ Because changing the clocks is pointless.
 The clocks change twice a year. It saves nothing, and it disrupts everything else:
 
 - **People** sleep badly for days after the change. Mornings feel wrong, and calendars, reminders and meeting times easily get mixed up.
-- **Dogs** know nothing about daylight saving time. A dog's internal clock says when it is time for a walk and when it is time to eat. When the humans' clock jumps by an hour, the dog either has to wait or gets woken too early, and neither of them understands why.
+- **Dogs and other pets** know nothing about daylight saving time. Their day runs on routines: when to eat, when to go out and when to sleep. When the humans' clock jumps by an hour, mealtimes and bedtime suddenly shift, and the animal has no idea why.
 
 The EU decided back in 2019 to stop changing the clocks. The clocks still change, because the member states have not agreed on which time to keep.
 

@@ -9,7 +9,7 @@ Koska kellojen siirtely on turhaa.
 Kellot siirretään kahdesti vuodessa. Se ei säästä mitään, mutta sotkee kaiken muun:
 
 - **Ihmiset** nukkuvat huonosti vielä päiviä siirron jälkeen. Aamut tuntuvat väärältä, ja kalenterit, muistutukset ja kokousajat menevät helposti sekaisin.
-- **Koirat** eivät tiedä mitään kesäajasta. Koiran sisäinen kello sanoo, että nyt mennään lenkille ja nyt syödään. Kun ihmisten kello hyppää tunnilla, koira joutuu odottamaan tai sitä herätetään liian aikaisin, eikä kumpikaan ymmärrä miksi.
+- **Koirat ja muut kotieläimet** eivät tiedä mitään kesäajasta. Niiden päivä rakentuu rutiinien varaan: milloin syödään, milloin ulkoillaan ja milloin nukutaan. Kun ihmisten kello hyppää tunnilla, ruoka-ajat ja nukkumaanmeno siirtyvät yhtäkkiä, eikä eläin ymmärrä miksi.
 
 EU päätti jo vuonna 2019, että kellojen siirtelystä luovutaan. Kellot kuitenkin siirtyvät yhä, koska jäsenmaat eivät ole päässeet sopuun siitä, kumpi aika jää voimaan.
 
